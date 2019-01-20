@@ -1,6 +1,6 @@
 
 define tinc::network(
-  $vpnaddress,
+  $vpnaddress='169.254.0.0/16',
   $vpnprefix='24',
   $vpnroute=[],
   $netname=$name,
@@ -9,7 +9,10 @@ define tinc::network(
   $interface='vpn0',
   $connectto=[],
   $nodename=$::hostname,
-  $keysize='4096'
+  $keysize='4096',
+  $devicetype='tap',
+  $mode='switch',
+  $purge=false,
 )
 {
 
@@ -23,14 +26,16 @@ define tinc::network(
       order   => '02'
     }
   }
+  if ($tinc::autoip == false) {
+    $vpnaddress=undef
+  }
 
   file { "/etc/tinc/${netname}":
     ensure => directory
   }
-  ->
-  file { "/etc/tinc/${netname}/hosts/":
+  -> file { "/etc/tinc/${netname}/hosts/":
     ensure => directory,
-    purge  => true
+    purge  => $purge
   }
 
   exec { "tinc-keygen-${netname}":
@@ -38,8 +43,7 @@ define tinc::network(
     creates => "/etc/tinc/${netname}/rsa_key.priv",
     require => File["/etc/tinc/${netname}/tinc.conf"]
   }
-  ->
-  exec { "tinc-pubkey-${netname}":
+  -> exec { "tinc-pubkey-${netname}":
     command => "/usr/bin/openssl rsa -in /etc/tinc/${netname}/rsa_key.priv -out /etc/tinc/${netname}/rsa_key.pub -pubout",
     creates => "/etc/tinc/${netname}/rsa_key.pub",
   }

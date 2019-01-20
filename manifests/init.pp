@@ -1,10 +1,18 @@
 
-class tinc($manageservice=true) {
+class tinc(
+  $manageservice=true,
+  $autoip=true,
+) {
 
   $service_noop = ! $manageservice
 
   package { 'tinc':
     ensure => present,
+  }
+  if ($autoip == true) {
+    package { 'avahi-autoipd':
+      ensure => present,
+    }
   }
   ->
   service { 'tinc':
@@ -14,10 +22,10 @@ class tinc($manageservice=true) {
   }
 
   concat { '/etc/tinc/nets.boot':
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    notify  => Service['tinc']
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    notify => Service['tinc']
   }
 
   concat::fragment { 'nets.boot-header':

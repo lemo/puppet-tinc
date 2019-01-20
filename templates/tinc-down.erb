@@ -1,2 +1,6 @@
 #!/bin/sh
+<% if scope['tinc::autoip'] == true -%>
+avahi-autoipd -k $INTERFACE
+<% elsif -%>
 ip link set $INTERFACE down
+<% end -%>

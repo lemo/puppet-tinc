@@ -1,6 +1,10 @@
 #!/bin/sh
+<% if scope['tinc::autoip'] == true -%>
+avahi-autoipd -D $INTERFACE
+<% elsif -%>
 ip link set $INTERFACE up
 ip addr add <%= @vpnaddress %>/<%= @vpnprefix %> dev $INTERFACE
 <% @vpnroute.each do |val| -%>
 route add -net <%= val %> $INTERFACE
 <% end %>
+<% end -%>
